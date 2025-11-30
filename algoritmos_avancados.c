@@ -1,9 +1,108 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Desafio Detective Quest
 // Tema 4 - Árvores e Tabela Hash
 // Este código inicial serve como base para o desenvolvimento das estruturas de navegação, pistas e suspeitos.
 // Use as instruções de cada região para desenvolver o sistema completo com árvore binária, árvore de busca e tabela hash.
+
+// Estrutura para representar uma sala (nó da árvore binária)
+typedef struct Sala {
+    char Nome[60];
+    struct Sala* Esquerda;
+    struct Sala* Direita;
+} Sala;
+
+// Função para criar uma nova sala
+Sala* criarSala(const char* Nome) {
+    Sala* novaSala = (Sala*)malloc(sizeof(Sala));
+    if (novaSala == NULL) {
+        printf("Erro de alocação de memória!\n");
+        exit(1);
+    }
+    strcpy(novaSala->Nome, Nome);
+    novaSala->Esquerda = NULL;
+    novaSala->Direita = NULL;
+    return novaSala;
+}
+
+// Função para explorar as salas interativamente
+void explorarSalas(Sala* salaAtual) {
+    if (salaAtual == NULL) {
+        printf("Sala não existe!\n");
+        return;
+    }
+    
+    printf("\n--- Você está no: %s ---\n", salaAtual->Nome);
+    
+    // Verifica se é uma sala final (nó folha)
+    if (salaAtual->Esquerda == NULL && salaAtual->Direita == NULL) {
+        printf("Este é um cômodo sem saída. Fim da exploração nesta direção.\n");
+        return;
+    }
+    
+    // Mostra opções disponíveis
+    printf("Opções de exploração:\n");
+    if (salaAtual->Esquerda != NULL) {
+        printf("  [e] - Ir para a esquerda (%s)\n", salaAtual->Esquerda->Nome);
+    }
+    if (salaAtual->Direita != NULL) {
+        printf("  [d] - Ir para a direita (%s)\n", salaAtual->Direita->Nome);
+    }
+    printf("  [s] - Sair da exploração\n");
+    
+    // Loop de interação com o usuário
+    char Opcao;
+    int opcaoValida = 0;
+    
+    while (!opcaoValida) {
+        printf("\nEscolha uma opção: ");
+        scanf(" %c", &Opcao);
+        
+        switch (Opcao) {
+            case 'e':
+            case 'E':
+                if (salaAtual->Esquerda != NULL) {
+                    explorarSalas(salaAtual->Esquerda);
+                    opcaoValida = 1;
+                } else {
+                    printf("Não há caminho à esquerda!\n");
+                }
+                break;
+                
+            case 'd':
+            case 'D':
+                if (salaAtual->Direita != NULL) {
+                    explorarSalas(salaAtual->Direita);
+                    opcaoValida = 1;
+                } else {
+                    printf("Não há caminho à direita!\n");
+                }
+                break;
+                
+            case 's':
+            case 'S':
+                printf("Saindo da exploração...\n");
+                return;
+                
+            default:
+                printf("Opção inválida! Use 'e' (esquerda), 'd' (direita) ou 's' (sair).\n");
+                break;
+        }
+    }
+}
+
+// Função para liberar a memória da árvore
+void liberarArvore(Sala* raiz) {
+    if (raiz != NULL) {
+        liberarArvore(raiz->Esquerda);
+        liberarArvore(raiz->Direita);
+        free(raiz);
+    }
+}
+
+// Função principal
 
 int main() {
 
@@ -42,6 +141,42 @@ int main() {
     // - Em caso de colisão, use lista encadeada para tratar.
     // - Modularize com funções como inicializarHash(), buscarSuspeito(), listarAssociacoes().
 
+    printf("=== DETECTIVE QUEST - EXPLORAÇÃO DA MANSÃO ===\n");
+    printf("Bem-vindo, detetive! Explore a mansão para encontrar pistas.\n\n");
+    
+    // Construção do mapa da mansão (árvore binária)
+    // Nível 0: Raiz
+    Sala* hallEntrada = criarSala("Hall de Entrada");
+    
+    // Nível 1: Filhos da raiz
+    hallEntrada->Esquerda = criarSala("Sala de Estar");
+    hallEntrada->Direita = criarSala("Biblioteca");
+    
+    // Nível 2: Filhos da Sala de Estar
+    hallEntrada->Esquerda->Esquerda = criarSala("Quarto dos Hóspedes");
+    hallEntrada->Esquerda->Direita = criarSala("Cozinha");
+    
+    // Nível 2: Filhos da Biblioteca
+    hallEntrada->Direita->Esquerda = criarSala("Escritório");
+    hallEntrada->Direita->Direita = criarSala("Jardim de Inverno");
+    
+    // Nível 3: Alguns cômodos adicionais
+    hallEntrada->Esquerda->Esquerda->Esquerda = criarSala("Banheiro Social");
+    hallEntrada->Esquerda->Direita->Direita = criarSala("Despensa");
+    hallEntrada->Direita->Esquerda->Esquerda = criarSala("Arquivo Secreto");
+    
+    printf("Mapa da mansão criado com sucesso!\n");
+    printf("Iniciando exploração a partir do Hall de Entrada...\n");
+    
+    // Inicia a exploração a partir do Hall de Entrada
+    explorarSalas(hallEntrada);
+    
+    printf("\n=== Exploração finalizada ===\n");
+    printf("Obrigado por jogar Detective Quest!\n");
+    
+    // Libera a memória alocada para a árvore
+    liberarArvore(hallEntrada);
+    
     return 0;
 }
 
